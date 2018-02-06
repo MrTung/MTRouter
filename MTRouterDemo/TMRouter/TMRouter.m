@@ -33,7 +33,7 @@ _Pragma("clang diagnostic pop") \
     static TMRouter * router;
     dispatch_once(&onceToken,^{
         router = [[TMRouter alloc] init];
-        //解析路由配置文件  生成路由配置字典
+        //解析路由配置文件  生成路由配置字典 plist文件中的 key 就是对应控制器的简称，这个可以自由定义；而value则是对应控制器的类名，这个必须和你创建的controller一致，否则会报错
         NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"RouterData" ofType:@"plist"];
         router.plistdata = [[NSMutableDictionary alloc] initWithContentsOfFile:plistPath];
     });

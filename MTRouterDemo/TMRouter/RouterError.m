@@ -23,7 +23,7 @@
 #pragma mark  自定义错误页面 此页面一定确保能够找到，否则会进入死循环
 -(UIViewController *)getErrorController{
     NSDictionary *diction = [[NSMutableDictionary alloc] init];
-    [diction setValue:@"https://github.com/MrTung" forKey:@"url"];
+    [diction setValue:@"https://github.com/MrTung/MTRouter.git" forKey:@"url"];
     UIViewController *errorController = [[TMRouter sharedInstance] getViewController:@"VC3" withParam:diction];
     return errorController;
 }
