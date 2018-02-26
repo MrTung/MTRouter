@@ -10,6 +10,7 @@
 		0138FC692027D8E200BC421C /* RouterError.m in Sources */ = {isa = PBXBuildFile; fileRef = 0138FC642027D8E200BC421C /* RouterError.m */; };
 		0138FC6A2027D8E200BC421C /* RouterData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0138FC662027D8E200BC421C /* RouterData.plist */; };
 		0138FC6B2027D8E200BC421C /* TMRouter.m in Sources */ = {isa = PBXBuildFile; fileRef = 0138FC682027D8E200BC421C /* TMRouter.m */; };
+		014016F72043B44000F7379B /* ViewController3.m in Sources */ = {isa = PBXBuildFile; fileRef = 014016F62043B44000F7379B /* ViewController3.m */; };
 		01F4971C2022D9DF003982E7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 01F4971B2022D9DF003982E7 /* AppDelegate.m */; };
 		01F4971F2022D9DF003982E7 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 01F4971E2022D9DF003982E7 /* ViewController.m */; };
 		01F497222022D9DF003982E7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 01F497202022D9DF003982E7 /* Main.storyboard */; };
@@ -46,6 +47,8 @@
 		0138FC662027D8E200BC421C /* RouterData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = RouterData.plist; sourceTree = "<group>"; };
 		0138FC672027D8E200BC421C /* RouterError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouterError.h; sourceTree = "<group>"; };
 		0138FC682027D8E200BC421C /* TMRouter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TMRouter.m; sourceTree = "<group>"; };
+		014016F52043B44000F7379B /* ViewController3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController3.h; sourceTree = "<group>"; };
+		014016F62043B44000F7379B /* ViewController3.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController3.m; sourceTree = "<group>"; };
 		01F497172022D9DF003982E7 /* MTRouterDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MTRouterDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		01F4971A2022D9DF003982E7 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		01F4971B2022D9DF003982E7 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -135,6 +138,8 @@
 				01F497632023E9A3003982E7 /* viewcontroller1.m */,
 				01F497642023E9A3003982E7 /* viewcontroller2.h */,
 				01F497682023E9A3003982E7 /* viewcontroller2.m */,
+				014016F52043B44000F7379B /* ViewController3.h */,
+				014016F62043B44000F7379B /* ViewController3.m */,
 				01F497652023E9A3003982E7 /* webView.h */,
 				01F497662023E9A3003982E7 /* webView.m */,
 				01F4971A2022D9DF003982E7 /* AppDelegate.h */,
@@ -304,6 +309,7 @@
 			files = (
 				01F4971F2022D9DF003982E7 /* ViewController.m in Sources */,
 				01F497692023E9A4003982E7 /* viewcontroller1.m in Sources */,
+				014016F72043B44000F7379B /* ViewController3.m in Sources */,
 				01F4976B2023E9A4003982E7 /* viewcontroller2.m in Sources */,
 				01F4972A2022D9DF003982E7 /* main.m in Sources */,
 				0138FC692027D8E200BC421C /* RouterError.m in Sources */,
