@@ -1,12 +1,12 @@
 //
-//  TMRouter.m
+//  MTRouter.m
 //  MTRouterDemo
 //
 //  Created by 董徐维 on 2018/2/1.
 //  Copyright © 2018年 董徐维. All rights reserved.
 //
 
-#import "TMRouter.h"
+#import "MTRouter.h"
 #import "RouterError.h"
 #import <UIKit/UIKit.h>
 
@@ -19,20 +19,20 @@ Stuff; \
 _Pragma("clang diagnostic pop") \
 } while (0)
 
-@interface TMRouter()
+@interface MTRouter()
 
 /**路由信息数据字典*/
 @property(nonatomic,strong) NSMutableDictionary *plistdata;
 
 @end
 
-@implementation TMRouter
+@implementation MTRouter
 
 +(id)sharedInstance{
     static dispatch_once_t onceToken;
-    static TMRouter * router;
+    static MTRouter * router;
     dispatch_once(&onceToken,^{
-        router = [[TMRouter alloc] init];
+        router = [[MTRouter alloc] init];
         //解析路由配置文件，生成路由配置字典。plist文件中的 key 就是对应控制器的简称，这个可以自由定义；而value则是对应控制器的类名，这个必须和你创建的controller一致，否则会报错
         NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"RouterData" ofType:@"plist"];
         router.plistdata = [[NSMutableDictionary alloc] initWithContentsOfFile:plistPath];

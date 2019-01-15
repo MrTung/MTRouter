@@ -7,7 +7,7 @@
 //
 
 #import "ViewController.h"
-#import "TMRouter.h"
+#import "MTRouter.h"
 
 @interface ViewController ()
 @property (nonatomic, copy) void (^textBlock)(NSString *msg);
@@ -61,21 +61,21 @@
         case 1:{
             NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
             [dic setValue:@"hello world" forKey:@"title"];
-            UIViewController *controller = [[TMRouter sharedInstance] getViewController:@"VC1" withParam:dic];
+            UIViewController *controller = [[MTRouter sharedInstance] getViewController:@"VC1" withParam:dic];
             [self presentViewController:controller animated:YES completion:nil];
         }
             break;
         case 2:{
-            NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+            NSMutableDictionary *dic = [[NSMutableDictionary  alloc] init];
             [dic setValue:@"hello world" forKey:@"title"];
-            UIViewController *controller = [[TMRouter sharedInstance] getViewController:@"VC2"  withParam:dic];
+            UIViewController *controller = [[MTRouter sharedInstance] getViewController:@"VC2"  withParam:dic];
             [self presentViewController:controller animated:YES completion:nil];
         }
             break;
         case 3:{
             NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
             [dic setValue:@"https://www.baidu.com" forKey:@"url"];
-            UIViewController *controller = [[TMRouter sharedInstance] getViewController:@"VC3" withParam:dic];
+            UIViewController *controller = [[MTRouter sharedInstance] getViewController:@"VC3" withParam:dic];
             [self presentViewController:controller animated:YES completion:nil];
         }
             break;
@@ -89,12 +89,12 @@
             
             [dic setObject:self.textBlock forKey:@"block"];
             
-            UIViewController *controller = [[TMRouter sharedInstance] getViewController:@"VC4"  withParam:dic];
+            UIViewController *controller = [[MTRouter sharedInstance] getViewController:@"VC4"  withParam:dic];
             [self presentViewController:controller animated:YES completion:nil];
         }
             break;
         case 4:{
-            UIViewController *controller = [[TMRouter sharedInstance] getViewController:@"unknowvc"  withParam:nil];
+            UIViewController *controller = [[MTRouter sharedInstance] getViewController:@"unknowvc"  withParam:nil];
             [self presentViewController:controller animated:YES completion:nil];
         }
             

@@ -1,5 +1,5 @@
 //
-//  TMRouter.h
+//  MTRouter.h
 //  MTRouterDemo
 //
 //  Created by 董徐维 on 2018/2/1.
@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface TMRouter : NSObject
+@interface MTRouter : NSObject
 
 +(id)sharedInstance;
 

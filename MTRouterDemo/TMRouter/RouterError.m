@@ -7,7 +7,7 @@
 //
 
 #import "RouterError.h"
-#import "TMRouter.h"
+#import "MTRouter.h"
 @implementation RouterError
 
 +(id)sharedInstance
@@ -24,7 +24,7 @@
 -(UIViewController *)getErrorController{
     NSDictionary *diction = [[NSMutableDictionary alloc] init];
     [diction setValue:@"https://github.com/MrTung/MTRouter.git" forKey:@"url"];
-    UIViewController *errorController = [[TMRouter sharedInstance] getViewController:@"VC3" withParam:diction];
+    UIViewController *errorController = [[MTRouter sharedInstance] getViewController:@"VC3" withParam:diction];
     return errorController;
 }
 @end
