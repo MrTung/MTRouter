@@ -1,229 +1,199 @@
-# MTRouter
-iOS模块化构建方案，模块间解耦，路由中心设计方案
+## 正文
 
-#### 简要说明
+#### 什么是组件化
 
-客户端在公司业务发展的过程中体积越来越庞大，其中堆叠了大量的业务逻辑代码，不同业务模块的代码相互调用，相互嵌套，代码之间的耦合性越来越高，调用逻辑会越来越混乱。当某个模块需要升级的时候，往往会有牵一发而动全身的感觉。特别是如果工程最初设计的时候没有考虑的接口的封装，而将大量的业务代码与功能模块代码混在一起时，将来的升级往往需要手动对代码的进行修改及调整，带来的工作量是非常巨大的。这就需要设计一套符合要求的模块之间通信的中间件。模块化、组件化可以将代码的功能逻辑尽量封装在一起，对外只提供接口，业务逻辑代码与功能模块通过接口进行弱耦合。
+###### 其他人的组件化
 
-在查阅相关资料和方案之后,结合OC的runtime特性,最近实现了一个相对比较简单的路由中间件。demo中只实现了app内部的路由功能，不同控制器之间基本做到了解耦，不需要互相引用，只需要配置好对应的plist文件即可自由跳转。app外部之间跳转目前尚未实现，后续看需求补充。
+在看了很多其他人的方案之后，首先对组件化思想上有一个小分歧。我认为很多人对于iOS中组件化的理解其实是有误区的。我刚工作的第一年就是在做Flex开发，其中就有很多组件化的思想，加上最近在用Vue做web项目之后，更为意识到大家在iOS开发上说的组件化有点不合适。
 
-详细思路引用了bang大神的，大家看看就好，具体实现下载demo就知道了。[点这里查看原文](http://blog.cnbang.net/tech/3080/).
+首先我认为组件是一个相对比较小的功能模块，不需要与外界有太多的通信，更不能依赖其他第三方，这一点尤为重要。比如说几乎所有iOS开发者都知道的MJReflesh，比如我很早之前开源的 [MTMessageKeyBoard](https://github.com/MrTung/MTMessageKeyBoard) 这些几乎不依赖业务，并且提供了良好的调用接口和使用体验的才能称为组件。而看了很多方案，大部分都是在讲app里面的业务功能组件之间的通信和解耦，其实我更愿意将这些东西称为“模块”。那如何区分这两种呢，我觉得这句话比较好理解:
+
+**核心业务模块化，通用功能组件化**
+
+打比方说你的app是一个电商项目,那么你的产品详情页、列表页、购物车、搜索等页面肯定就是调用频次非常高的VC了，这些界面之间跳转都会非常频繁。这就造成了互相依赖并且高度耦合。如下图所示。
+
+![](https://ws2.sinaimg.cn/large/006tKfTcgy1frj3m1yia6j31140omgra.jpg)
+
+看起来是不是跟个麻花一样？而怎么样才能解决这个问题呢? 等下会讲。
+
+像商品详情页这些通常外部调入只需要传入一个productID就可以，而且高度依赖自己的业务功能的模块就可以将这些当成一个模块维护。后面需要修改里面的活动的显示、业务的增删都可以单独在详情模块里面改动而不需要改动别的代码。
+
+而对于组件，比方说我上面提到的IM类型的app中用到的聊天键盘,或者集成支付宝、微信等支付功能的支付插件。这些可以在多个不同的项目小组内部共享。甚至可以开源到社区中供所有开发者使用的小插件，用组件来形容更贴切。在flex、Vue、angular等前端开发中体现尤为突出。
+
+所以接下来我所要讲的组件化实际上更贴切的说法是模块化。
+
+###### 为什么要有组件化(模块化)
+
+客户端在公司业务发展的过程中体积越来越庞大，其中堆叠了大量的业务逻辑代码，不同业务模块的代码相互调用，相互嵌套，代码之间的耦合性越来越高，调用逻辑会越来越混乱。当某个模块需要升级的时候，改动代码的时候往往会有牵一发而动全身的感觉。特别是如果工程最初设计的时候没有考虑的接口的封装，而将大量的业务代码与功能模块代码混在一起时，将来的升级就需要对代码进行大量修改及调整，带来的工作量是非常巨大的。这就需要设计一套符合要求的组件之间通信的中间件。模块化可以将代码的功能逻辑尽量封装在一起，对外只提供接口，业务逻辑代码与功能模块通过接口进行弱耦合。
 
 
-###——————————————————————————————
+#### 我的模块化架构思路
 
-一个 APP 有多个模块，模块之间会通信，互相调用，例如微信读书有 书籍详情 想法列表 阅读器 发现卡片 等等模块。这些模块会互相调用，例如 书籍详情要调起阅读器和想法列表，阅读器要调起想法列表和书籍详情，等等，一般我们是怎样调用呢，以阅读器为例，会这样写：
+###### 如何优化模块之间的通信
+
+封装模块的工作只要你对面向对象思想有所理解，实现起来应该不难，确保写好调用接口就行，这里不再赘述。而模块化最重要的就是各个模块之间的通信。比如在商品搜索列表页面，需要查看购物车功能和查看商品详情功能，购物车的商品列表也能点击商品到商品详情页。等等这些界面之间都会相互调用，相互依赖。通常我们会怎么实现呢？比如这样:
 
 ```
-#import "WRBookDetailViewController.h"
-#import "WRReviewViewController.h"
-@implementation WRReadingViewController
+#import "ProductDetailViewController.h"
+#import "CartViewController.h"
+
+@implementation ProductListViewController
+
 - (void)gotoDetail {
- WRBookDetailViewController *detailVC = [[WRBookDetailViewController alloc] initWithBookId:self.bookId];
+ ProductDetailViewController *detailVC = [[ProductDetailViewController alloc] initWithProId:self.proId];
  [self.navigationController pushViewController:detailVC animated:YES];
 }
 
-- (void)gotoReview {
- WRReviewViewController *reviewVC = [[WRReviewViewController alloc] initWithBookId:self.bookId reviewType:1];
- [self.navigationController pushViewController:reviewVC animated:YES];
-}
-@end
-
-```
-看起来挺好，这样做简单明了，没有多余的东西，项目初期推荐这样快速开发，但到了项目越来越庞大，这种方式会有什么问题呢？显而易见，每个模块都离不开其他模块，互相依赖粘在一起成为一坨：
-
-![MacDown logo](http://blog.cnbang.net/wp-content/uploads/2016/03/component1.png)
-
-component1
-这样揉成一坨对测试/编译/开发效率/后续扩展都有一些坏处，那怎么解开这一坨呢。很简单，按软件工程的思路，下意识就会加一个中间层：
-
-![MacDown logo](http://blog.cnbang.net/wp-content/uploads/2016/03/component2-1024x597.png)
-
-component2
-叫他 Mediator Manager Router 什么都行，反正就是负责转发信息的中间层，暂且叫他 Mediator。
-看起来顺眼多了，但这里有几个问题：
-
-1.Mediator 怎么去转发组件间调用？
-
-2.一个模块只跟 Mediator 通信，怎么知道另一个模块提供了什么接口？
-
-3.按上图的画法，模块和 Mediator 间互相依赖，怎样破除这个依赖？
-
-##方案1
-对于前两个问题，最直接的反应就是在 Mediator 直接提供接口，调用对应模块的方法：
-//Mediator.m
-
-```
-#import "BookDetailComponent.h"
-#import "ReviewComponent.h"
-@implementation Mediator
-+ (UIViewController *)BookDetailComponent_viewController:(NSString *)bookId {
- return [BookDetailComponent detailViewController:bookId];
-}
-+ (UIViewController *)ReviewComponent_viewController:(NSString *)bookId reviewType:(NSInteger)type {
- return [ReviewComponent reviewViewController:bookId type:type];
-}
-@end
-//BookDetailComponent 组件
-#import "Mediator.h"
-#import "WRBookDetailViewController.h"
-@implementation BookDetailComponent
-+ (UIViewController *)detailViewController:(NSString *)bookId {
- WRBookDetailViewController *detailVC = [[WRBookDetailViewController alloc] initWithBookId:bookId];
- return detailVC;
-}
-@end
-//ReviewComponent 组件
-#import "Mediator.h"
-#import "WRReviewViewController.h"
-@implementation ReviewComponent
-+ (UIViewController *)reviewViewController:(NSString *)bookId type:(NSInteger)type {
- UIViewController *reviewVC = [[WRReviewViewController alloc] initWithBookId:bookId type:type];
- return reviewVC;
+- (void)gotoCart {
+ CartViewController *cartVC = [[CartViewController alloc] init];
+ [self.navigationController pushViewController: cartVC animated:YES];
 }
 @end
 ```
-然后在阅读模块里：
-//WRReadingViewController.m
+
+相信这样的代码大家都不陌生，基本都是这样做。而且这样写也并没有问题。但是，项目一旦大起来问题就来了。
+各个模块只要有相互调用的情况，都会相互产生依赖。每次跳转都需要import对应的控制器，重写一次代码。如果某个地方做了一点点需求改动，比如商品详情页需要多传入一个参数，这个时候就要找到各个调用的地方逐一修改。这显然不是高效的办法。
+
+###### 运用中间件
+
+于是很简单的就想到了一个方法，提供一个中间层:Router。在router里面定义好每次跳转的方法，然后在需要用的界面调用router函数，传入对应的参数。比如这样：
+
+![](https://ws3.sinaimg.cn/large/006tKfTcgy1frj3s3j7soj312g0ss7be.jpg)
+
 
 ```
-#import "Mediator.h"
-@implementation WRReadingViewController
-- (void)gotoDetail:(NSString *)bookId {
- UIViewController *detailVC = [Mediator BookDetailComponent_viewControllerForDetail:bookId];
- [self.navigationController pushViewController:detailVC];
+//Router.m
+#import "ProductDetailViewController.h"
+#import "CartViewController.h"
 
- UIViewController *reviewVC = [Mediator ReviewComponent_viewController:bookId type:1];
- [self.navigationController pushViewController:reviewVC];
+@implementation Router
+
++ (UIViewController *) getDetailWithParam:(NSString *) param {
+	ProductDetailViewController *detailVC = [[ProductDetailViewController alloc] 	initWithProId:self.proId];
+	return detailVC;
+}
+
++ (UIViewController *) getCart {
+   CartViewController *cartVC = [[CartViewController alloc] init];
+   return cartVC;
 }
 @end
 ```
-这就是一开始架构图的实现，看起来显然这样做并没有什么好处，依赖关系并没有解除，Mediator 依赖了所有模块，而调用者又依赖 Mediator，最后还是一坨互相依赖，跟原来没有 Mediator 的方案相比除了更麻烦点其他没区别。
 
-那怎么办呢。
-怎样让Mediator解除对各个组件的依赖，同时又能调到各个组件暴露出来的方法？对于OC有一个法宝可以做到，就是runtime反射调用：
-
-//Mediator.m
+其他界面中这样使用
 
 ```
-@implementation Mediator
-+ (UIViewController *)BookDetailComponent_viewController:(NSString *)bookId {
- Class cls = NSClassFromString(@"BookDetailComponent");
- return [cls performSelector:NSSelectorFromString(@"detailViewController:") withObject:@{@"bookId":bookId}];
+#import "Router.m"
+
+ UIViewController * detailVC = [[Router instance] jumpToDetailWithParam:param];
+ [self.navigationController pushViewController: detailVC];
+  
+```
+
+###### 运用runtime
+
+但是这样写的话也有一个问题，每个vc都会依赖Router,而Router里面会依赖所有的VC。那如何打破这层循环引用呢？OC里有个法宝可以用到:runtime。
+
+```
+-(UIViewController *)getViewController:(NSString *)stringVCName
+{
+  	Class class = NSClassFromString(stringVCName);
+    UIViewController *controller = [[class alloc] init];
+    if(controller == nil){
+        NSLog(@"未找到此类:%@",stringVCName);
+        controller = [[RouterError sharedInstance] getErrorController];
+    }
+    return controller;
 }
-+ (UIViewController *)ReviewComponent_viewController:(NSString *)bookId type:(NSInteger)type {
- Class cls = NSClassFromString(@"ReviewComponent");
- return [cls performSelector:NSSelectorFromString(@"reviewViewController:") withObject:@{@"bookId":bookId, @"type": @(type)}];
-}
-@end
+```
+这样上面的图就是这样的：
+
+![](https://ws1.sinaimg.cn/large/006tKfTcgy1frj3tbh330j31260qoac0.jpg)
+
+这样Router里面不需要import任何vc了，代码也就数十行而已，看起来非常的简便。而且做了异常处理，如果找不到此类，会返回预先设置的错误界面。是不是有点类似于web开发中的404界面呢？
+
+
 
 ```
-这下 Mediator 没有再对各个组件有依赖了，你看已经不需要 #import 什么东西了，对应的架构图就变成：
-![MacDown logo](http://blog.cnbang.net/wp-content/uploads/2016/03/component31-1024x548.png)
+  UIViewController *controller = [[Router sharedInstance] getViewController:@"ProductDetailViewController"];
+  [self.navigationController pushViewController:controller];          
+```
+ 
+###### 如何传参数
 
-component3
-只有调用其他组件接口时才需要依赖 Mediator，组件开发者不需要知道 Mediator 的存在。
-等等，既然用runtime就可以解耦取消依赖，那还要Mediator做什么？组件间调用时直接用runtime接口调不就行了，这样就可以没有任何依赖就完成调用：
-//WRReadingViewController.m
+很多人肯定都发现了，这样写的话如何传参数呢。比如商品详情页至少要传一个productID吧。别急，我们可以将上面的方法稍微处理，传入一个dict做了参数。
 
 ```
-@implementation WRReadingViewController
-- (void)gotoReview:(NSString *)bookId {
- Class cls = NSClassFromString(@"ReviewComponent");
- UIViewController *reviewVC = [cls performSelector:NSSelectorFromString(@"reviewViewController:") withObject:@{@"bookId":bookId, @"type": @(1)}];
- [self.navigationController pushViewController:reviewVC];
-}
-@end
-
-```
-这样就完全解耦了，但这样做的问题是：
-
-1.调用者写起来很恶心，代码提示都没有，每次调用写一坨。
-
-2.runtime方法的参数个数和类型限制，导致只能每个接口都统一传一个 NSDictionary。这个 NSDictionary里的key value是什么不明确，需要找个地方写文档说明和查看。
-
-3.编译器层面不依赖其他组件，实际上还是依赖了，直接在这里调用，没有引入调用的组件时就挂了
-
-
-**把它移到Mediator后：**
-
-1.调用者写起来不恶心，代码提示也有了。
-
-2.参数类型和个数无限制，由 Mediator 去转就行了，组件提供的还是一个 NSDictionary 参数的接口，但在Mediator 里可以提供任意类型和个数的参数，像上面的例子显式要求参数 NSString *bookId 和 NSInteger type。
-
-3.Mediator可以做统一处理，调用某个组件方法时如果某个组件不存在，可以做相应操作，让调用者与组件间没有耦合。
-
-到这里，基本上能解决我们的问题：各组件互不依赖，组件间调用只依赖中间件Mediator，Mediator不依赖其他组件。接下来就是优化这套写法，有两个优化点：
-
-
-1.Mediator 每一个方法里都要写 runtime 方法，格式是确定的，这是可以抽取出来的。
-
-
-2.每个组件对外方法都要在 Mediator 写一遍，组件一多 Mediator 类的长度是恐怖的。
-优化后就成了 casa 的方案，target-action 对应第一点，target就是class，action就是selector，通过一些规则简化动态调用。Category 对应第二点，每个组件写一个 Mediator 的 Category，让 Mediator 不至于太长。这里有个demo
-总结起来就是，组件通过中间件通信，中间件通过 runtime 接口解耦，通过 target-action 简化写法，通过 category 感官上分离组件接口代码。
-
-##方案2
-
-回到 Mediator 最初的三个问题，蘑菇街用的是另一种方式解决：注册表的方式，用URL表示接口，在模块启动时注册模块提供的接口，一个简化的实现：
-//Mediator.m 中间件
-
-```
-@implementation Mediator
-typedef void (^componentBlock) (id param);
-@property (nonatomic, storng) NSMutableDictionary *cache
-- (void)registerURLPattern:(NSString *)urlPattern toHandler:(componentBlock)blk {
- [cache setObject:blk forKey:urlPattern];
+-(UIViewController *)getViewController:(NSString *)stringVCName
+{
+    Class class = NSClassFromString(stringVCName);
+    UIViewController *controller = [[class alloc] init];
+    return controller;
 }
 
-- (void)openURL:(NSString *)url withParam:(id)param {
- componentBlock blk = [cache objectForKey:url];
- if (blk) blk(param);
+-(UIViewController *)getViewController:(NSString *)stringVCName withParam:(NSDictionary *)paramdic
+{
+    UIViewController *controller = [self getViewController:stringVCName];
+    if(controller != nil){
+        controller = [self controller:controller withParam:paramdic andVCname:stringVCName];
+    }else{
+        NSLog(@"未找到此类:%@",stringVCName);
+        //EXCEPTION  Push a Normal Error VC
+        controller = [[RouterError sharedInstance] getErrorController];
+    }
+    return controller;
 }
-@end
 
-```
-//BookDetailComponent 组件
-
-```
-#import "Mediator.h"
-#import "WRBookDetailViewController.h"
-+ (void)initComponent {
- [[Mediator sharedInstance] registerURLPattern:@"weread://bookDetail" toHandler:^(NSDictionary *param) {
- WRBookDetailViewController *detailVC = [[WRBookDetailViewController alloc] initWithBookId:param[@"bookId"]];
- [[UIApplication sharedApplication].keyWindow.rootViewController.navigationController pushViewController:detailVC animated:YES];
- }];
-}
-//WRReadingViewController.m 调用者
-//ReadingViewController.m
-#import "Mediator.h"
-
-+ (void)gotoDetail:(NSString *)bookId {
- [[Mediator sharedInstance] openURL:@"weread://bookDetail" withParam:@{@"bookId": bookId}];
+/**
+ 此方法用来初始化参数（控制器初始化方法默认为 initViewControllerParam。初始化方法你可以自定义，前提是VC必须实现它。要想灵活一点，也可以加一个参数actionName,当做参数传入。不过这样你就需要修改此方法了)。
+ @param controller 获取到的实例VC
+ @param paramdic 实例化参数
+ @param vcName 控制器名字
+ @return 初始化之后的VC
+ */
+-(UIViewController *)controller:(UIViewController *)controller withParam:(NSDictionary *)paramdic andVCname:(NSString *)vcName {
+    
+    SEL selector = NSSelectorFromString(@"initViewControllerParam:");
+    if(![controller respondsToSelector:selector]){  //如果没定义初始化参数方法，直接返回，没必要在往下做设置参数的方法
+        NSLog(@"目标类:%@未定义:%@方法",controller,@"initViewControllerParam:");
+        return controller;
+    }
+    //在初始化参数里面添加一个key信息，方便控制器中查验路由信息
+    if(paramdic == nil){
+        paramdic = [[NSMutableDictionary alloc] init];
+        
+        [paramdic setValue:vcName forKey:@"URLKEY"];
+        
+        SuppressPerformSelectorLeakWarning([controller performSelector:selector withObject:paramdic]);
+    }else{
+        
+        [paramdic setValue:vcName forKey:@"URLKEY"];
+    }
+    SuppressPerformSelectorLeakWarning( [controller performSelector:selector withObject:paramdic]);
+    return controller;
 }
 
 ```
-这样同样做到每个模块间没有依赖，Mediator 也不依赖其他组件，不过这里不一样的一点是组件本身和调用者都依赖了Mediator，不过这不是重点，架构图还是跟方案1一样。
-各个组件初始化时向 Mediator 注册对外提供的接口，Mediator 通过保存在内存的表去知道有哪些模块哪些接口，接口的形式是 URL->block。
-这里抛开URL的远程调用和本地调用混在一起导致的问题，先说只用于本地调用的情况，对于本地调用，URL只是一个表示组件的key，没有其他作用，这样做有三个问题：
+我们默认在业务控制器里面有个`initViewControllerParam`方法,然后再router里面可以用`respondsToSelector`手动触发这个方法，传入参数paramdict。当然如果你想要更加灵活一点，那就将`initViewControllerParam`初始化方法当做一个`actionName`参数传到router里面。类似于这样：
 
-1.需要有个地方列出各个组件里有什么 URL 接口可供调用。蘑菇街做了个后台专门管理。
-
-2.每个组件都需要初始化，内存里需要保存一份表，组件多了会有内存问题。
-
-3.参数的格式不明确，是个灵活的 dictionary，也需要有个地方可以查参数格式。
-第二点没法解决，第一点和第三点可以跟前面那个方案一样，在 Mediator 每个组件暴露方法的转接口，然后使用起来就跟前面那种方式一样了。
-
-抛开URL不说，这种方案跟方案1的共同思路就是：
-
-Mediator 不能直接去调用组件的方法，因为这样会产生依赖，那我就要通过其他方法去调用，也就是通过 字符串->方法 的映射去调用。
-
-runtime 接口的 className + selectorName -> IMP 是一种，注册表的 key -> block 是一种，而前一种是 OC 自带的特性，后一种需要内存维持一份注册表，这是不必要的。
+```
+-(UIViewController *)controller:(UIViewController *)controller withParam:(NSDictionary *)paramdic andVCname:(NSString *)vcName actionName:(NSString *)actionName{
+    SEL selector = NSSelectorFromString(actionName);
+    
+    ....后面就是一样的代码了
 
 
-现在说回 URL，组件化是不应该跟 URL 扯上关系的，因为组件对外提供的接口主要是模块间代码层面上的调用，我们先称为本地调用，而 URL 主要用于 APP 间通信，姑且称为远程调用。按常规思路者应该是对于远程调用，再加个中间层转发到本地调用，让这两者分开。
+```
 
-那这里这两者混在一起有什么问题呢？
+到这里基本上模块化就可以实现了。基本上通过不超过100行的代码解决了各个复杂业务模块之间的通信和高度解耦。
 
 
-如果是 URL 的形式，那组件对外提供接口时就要同时考虑本地调用和远程调用两种情况，而远程调用有个限制，传递的参数类型有限制，只能传能被字符串化的数据，或者说只能传能被转成 json 的数据，像 UIImage 这类对象是不行的，所以如果组件接口要考虑远程调用，这里的参数就不能是这类非常规对象，接口的定义就受限了。
+#### 总结
+
+模块化的实现方法在iOS开发中算是比较好实现的，主要是OC本身就是一门动态的语言。对象类型是加上是在运行时中确定的，而调用方法在oc中是以发消息的形式实现。这就增加了很多可以操作的可能性。这种方法在大部分的app中都能很好的应用，并且解决大部分的业务需求。
+
+而博客开始之前提到的组件化，其实一般在小中型的项目里面用到的可能性不大，除非业务真的非常复杂和庞大。有至少10个或者以上的开发者才会遇到将部分通用的功能抽离出来做成组件。iOS中组件化目前最合适也是最成熟的就是CocoaPods私有库了，直接托管到内部git服务器上使用,或者开源到gitHub上让全球的开发者使用你的插件。
+
+类似于中间件的模块化方案其实之前在项目中我有实践,确实能解决一部分的开发问题和效率。但是在和很多其他开发者交流中发现，其实业务的复杂度很难支持你做好真正的模块化。经常都是良好的开端，最后由于项目推进中带来的需求更改，促使你不断修改这个所谓的中间件。到最后还是揉成一坨，带来更多新的问题。所以，在实践中大家仁者见仁智者见智吧,但是本文中所提到的方案还是有必要了解和掌握的。
+
+毕竟胸有兵法，不怕干仗嘛。
