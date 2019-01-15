@@ -98,7 +98,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0138FC632027D8E200BC421C /* TMRouter */ = {
+		0138FC632027D8E200BC421C /* MTRouter */ = {
 			isa = PBXGroup;
 			children = (
 				0138FC662027D8E200BC421C /* RouterData.plist */,
@@ -107,7 +107,7 @@
 				0138FC652027D8E200BC421C /* MTRouter.h */,
 				0138FC682027D8E200BC421C /* MTRouter.m */,
 			);
-			path = TMRouter;
+			path = MTRouter;
 			sourceTree = "<group>";
 		};
 		01F4970E2022D9DF003982E7 = {
@@ -133,7 +133,7 @@
 		01F497192022D9DF003982E7 /* MTRouterDemo */ = {
 			isa = PBXGroup;
 			children = (
-				0138FC632027D8E200BC421C /* TMRouter */,
+				0138FC632027D8E200BC421C /* MTRouter */,
 				01F497672023E9A3003982E7 /* viewcontroller1.h */,
 				01F497632023E9A3003982E7 /* viewcontroller1.m */,
 				01F497642023E9A3003982E7 /* viewcontroller2.h */,
